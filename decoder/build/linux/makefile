@@ -163,6 +163,7 @@ tests: libs
 	cd $(OCSD_ROOT)/tests/build/linux/snapshot_parser_lib && make
 	cd $(OCSD_ROOT)/tests/build/linux/trc_pkt_lister && make
 	cd $(OCSD_ROOT)/tests/build/linux/c_api_pkt_print_test && make
+	cd $(OCSD_ROOT)/tests/build/linux/ptkdecoder_test && make
 
 #
 # build docs
@@ -187,6 +188,7 @@ clean_tests:
 	cd $(OCSD_ROOT)/tests/build/linux/snapshot_parser_lib && make clean
 	cd $(OCSD_ROOT)/tests/build/linux/trc_pkt_lister && make clean
 	cd $(OCSD_ROOT)/tests/build/linux/c_api_pkt_print_test && make clean
+	cd $(OCSD_ROOT)/tests/build/linux/ptkdecoder_test && make clean
 	-rmdir $(OCSD_TESTS)/lib
 
 clean_docs:

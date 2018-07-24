@@ -34,6 +34,11 @@
 #ifndef ARM_GEN_ELEM_PRINTER_H_INCLUDED
 #define ARM_GEN_ELEM_PRINTER_H_INCLUDED
 
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <assert.h>
+
 #include "opencsd.h"
 
 class TrcGenericElementPrinter : public ItemPrinter, public ITrcGenElemIn
@@ -49,9 +54,22 @@ public:
     // funtionality to test wait / flush mechanism
     void ackWait() { m_needWaitAck = false; };
     const bool needAckWait() const { return m_needWaitAck; };
+    void writeCFG(const char* cfgFileName);
+    void printSessionStat();
+    void resetSessionStat();
 
 protected:
     bool m_needWaitAck;
+private:
+    typedef struct {
+    	uint64_t start;
+    	uint64_t end;
+    }instruction_range_t;
+    typedef std::vector<instruction_range_t> cfg_db_t;
+    cfg_db_t cfg_db;
+    uint64_t sesionBBCount;
+
+
 };
 
 
@@ -65,12 +83,36 @@ inline ocsd_datapath_resp_t TrcGenericElementPrinter::TraceElemIn(const ocsd_trc
                                               const OcsdTraceElement &elem)
 {
     ocsd_datapath_resp_t resp = OCSD_RESP_CONT;
+
     std::string elemStr;
     std::ostringstream oss;
+#if 0
     oss << "Idx:" << index_sop << "; ID:"<< std::hex << (uint32_t)trc_chan_id << "; ";
     elem.toString(elemStr);
     oss << elemStr << std::endl;
     itemPrintLine(oss.str());
+#endif
+
+	switch (elem.getType()) {
+	case OCSD_GEN_TRC_ELEM_INSTR_RANGE:
+		cfg_db.push_back({elem.st_addr, elem.en_addr});
+		sesionBBCount++;
+
+		break;
+	case OCSD_GEN_TRC_ELEM_EXCEPTION:
+		cfg_db.push_back({0xdead, 0xdead});
+		sesionBBCount++;
+
+		break;
+	case OCSD_GEN_TRC_ELEM_EXCEPTION_RET:
+		cfg_db.push_back({0xbeef, 0xbeef});
+		sesionBBCount++;
+
+		break;
+	default:
+		break;
+	}
+
 
     // funtionality to test wait / flush mechanism
     if(m_needWaitAck)
@@ -89,6 +131,33 @@ inline ocsd_datapath_resp_t TrcGenericElementPrinter::TraceElemIn(const ocsd_trc
     }
     return resp; 
 }
+inline void TrcGenericElementPrinter::writeCFG(
+    const char* cfgFileName)
+{
+
+    std::cout << "======== writeCFG" << std::endl;
+    std::fstream cfg(cfgFileName, std::ofstream::out);
+    assert(cfg.is_open());
+    cfg_db_t::iterator itr = cfg_db.begin();
+
+    for (; itr != cfg_db.end(); ++itr) {
+        cfg << std::hex << itr->start << "," << std::hex << itr->end
+                << std::endl;
+    }
+
+    cfg.close();
+    cfg_db.clear();
+
+}
+inline void TrcGenericElementPrinter::printSessionStat() {
+    std::cout << "cfg_db.size: "<<  cfg_db.size()<< std::endl;
+    std::cout << "sesionBBCount: "<<  sesionBBCount<< std::endl;
+
+}
+inline void TrcGenericElementPrinter::resetSessionStat(){
+	sesionBBCount=0;
+}
+
 
 #endif // ARM_GEN_ELEM_PRINTER_H_INCLUDED
 
