@@ -234,7 +234,7 @@ void pkt_decoder::doDecode(uint8_t* pbuf, int32_t bufSize) {
     count = 0;
     // BUG: resetting trace_index results in
     //      failure to decode the second sample onwards
-   // trace_index = 0;
+    trace_index = 0;
 
 	pGenElemPrinter->resetSessionStat();
 
@@ -280,7 +280,7 @@ void pkt_decoder::doDecode(uint8_t* pbuf, int32_t bufSize) {
 
    // dataPathResp = dcd_tree->TraceDataIn(OCSD_OP_FLUSH,0,0,0,0);
    // dataPathResp = dcd_tree->TraceDataIn(OCSD_OP_EOT,0,0,0,0);
-   //  dataPathResp = dcd_tree->TraceDataIn(OCSD_OP_RESET,0,0,0,0);
+     dataPathResp = dcd_tree->TraceDataIn(OCSD_OP_RESET,0,0,0,0);
 }
 
 void pkt_decoder::cleanup() {
